@@ -26,7 +26,7 @@ public class ReportService {
      */
     public String getLastReportFromSettlement(String settlement) {
         return reports.stream()
-                .filter(i -> i.getSettlement().equals(settlement))
+                .filter(report -> report.isSettlement(settlement))
                 .max(Comparator.comparing(Report::getReportTime))
                 .map(Report::getReportTime)
                 .map(ReportTime::toString)
@@ -64,7 +64,7 @@ public class ReportService {
 
     private String printCalmReports(List<Report> calmReports) {
         return calmReports.stream()
-                .map(i -> i.getSettlement() + " " + i.getReportTime())
+                .map(Report::printReportTime)
                 .collect(Collectors.joining(ENTER));
     }
 
@@ -105,31 +105,25 @@ public class ReportService {
 
 
     private boolean hasAllReportTemperaturesBySettlement(String settlement) {
-        List<Integer> hours = getReportBySettlement(settlement).stream()
+        return ReportTime.REPORT_HOURS.size() ==
+                getReportBySettlement(settlement).stream()
                 .map(Report::getReportTime)
                 .map(ReportTime::getHour)
                 .distinct()
-                .collect(Collectors.toList());
-        return hours.containsAll(ReportTime.REPORT_HOURS);
+                .count();
     }
 
-    private int countAverageTemperaturesBySettlement(String settlement) {
-        List<Integer> temperaturesBySettlement = getReportTemperaturesBySettlement(settlement);
-        int sum = temperaturesBySettlement.stream().mapToInt(i -> i).sum();
-        int count = temperaturesBySettlement.size();
-        return Math.round((float) sum / count);
+    private long countAverageTemperaturesBySettlement(String settlement) {
+        return Math.round(getReportBySettlement(settlement).stream()
+                .mapToInt(Report::getTemperature)
+                .average()
+                .getAsDouble());
     }
 
     private List<Report> getReportBySettlement(String settlement) {
         return reports.stream()
-                .filter(i -> i.getSettlement().equals(settlement))
+                .filter(i -> i.isSettlement(settlement))
                 .filter(Report::isReportHour)
-                .collect(Collectors.toList());
-    }
-
-    private List<Integer> getReportTemperaturesBySettlement(String settlement) {
-        return getReportBySettlement(settlement).stream()
-                .map(Report::getTemperature)
                 .collect(Collectors.toList());
     }
 
@@ -146,7 +140,7 @@ public class ReportService {
 
     private int getLowestTemperatureBySettlement(String settlement) {
         return reports.stream()
-                .filter(i -> i.getSettlement().equals(settlement))
+                .filter(i -> i.isSettlement(settlement))
                 .map(Report::getTemperature)
                 .min(Integer::compareTo)
                 .get();
@@ -154,7 +148,7 @@ public class ReportService {
 
     private int getHighestTemperatureBySettlement(String settlement) {
         return reports.stream()
-                .filter(i -> i.getSettlement().equals(settlement))
+                .filter(i -> i.isSettlement(settlement))
                 .map(Report::getTemperature)
                 .max(Integer::compareTo)
                 .get();
@@ -178,7 +172,7 @@ public class ReportService {
 
     private List<String> getReportDetailsBySettlement(String settlement) {
         return reports.stream()
-                .filter(i -> i.getSettlement().equals(settlement))
+                .filter(i -> i.isSettlement(settlement))
                 .map(Report::getReportDetail)
                 .collect(Collectors.toList());
     }

@@ -18,6 +18,10 @@ public class Report {
         return settlement;
     }
 
+    public boolean isSettlement(String settlement) {
+        return this.settlement.equals(settlement);
+    }
+
     public ReportTime getReportTime() {
         return reportTime;
     }
@@ -36,6 +40,10 @@ public class Report {
 
     public String getReportDetail() {
         return reportTime + " " + wind.getWindForce();
+    }
+
+    public String printReportTime() {
+        return settlement + " " + reportTime;
     }
 
         @Override
